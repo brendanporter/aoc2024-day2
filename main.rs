@@ -56,6 +56,4 @@ fn check_safety(input: String) -> bool {
     }
 
     return (decreasing ^ increasing) & gradual;
-
-    return false;
 }
