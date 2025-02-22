@@ -14,6 +14,11 @@ fn main() {
         "is 7 6 4 2 1 safe?: {}",
         check_safety("7 6 4 2 1".to_string())
     );
+
+    println!(
+        "is 1 2 7 8 9 safe?: {}",
+        check_safety("1 2 7 8 9".to_string())
+    );
 }
 
 fn check_safety(input: String) -> bool {
@@ -56,4 +61,13 @@ fn check_safety(input: String) -> bool {
     }
 
     return (decreasing ^ increasing) & gradual;
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn safe() {
+        assert_eq!(check_safety("7 6 4 2 1").to_string(), true);
+        assert_eq!(check_safety("1 2 7 8 9").to_string(), false);
+    }
 }
