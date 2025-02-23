@@ -43,14 +43,6 @@ fn check_safety(input: String, skip_index: i32) -> bool {
         // convert part to int
         let part: i32 = part.parse().unwrap();
 
-        if skip_index == -1 {
-            let fixed = check_safety(input.clone(), 0);
-            if fixed {
-                println!("removing index {} fixes report", index);
-                return true;
-            }
-        }
-
         if skip_index == index as i32 {
             continue;
         }
@@ -82,6 +74,19 @@ fn check_safety(input: String, skip_index: i32) -> bool {
                 return true;
             }
         }
+
+        if (parts.clone().count() as i32) - 1 == index as i32 {
+            if skip_index == -1 {
+                let fixed = check_safety(input.clone(), 0);
+                if fixed {
+                    println!("removing index {} fixes report", index);
+                    return true;
+                }
+            }
+            return passing_before_last_index;
+        }
+
+        passing_before_last_index = (decreasing ^ increasing) & gradual & minimum_diff_met;
     }
 
     return (decreasing ^ increasing) & gradual & minimum_diff_met;
