@@ -10,64 +10,93 @@ fn main() {
 
     // println!("File Contents:\n\n{}", contents);
 
-    println!(
-        "is 7 6 4 2 1 safe?: {}",
-        check_safety("7 6 4 2 1".to_string())
-    );
+    let mut safe_lines: i32 = 0;
+    let mut total_lines: i32 = 0;
 
-    println!(
-        "is 1 2 7 8 9 safe?: {}",
-        check_safety("1 2 7 8 9".to_string())
-    );
+    // dbg!(check_safety("7 6 4 2 1".to_string(), -1));
+
+    for line in contents.lines() {
+        if check_safety(line.to_string(), -1) {
+            safe_lines += 1
+        }
+        total_lines += 1
+    }
+
+    println!("Safe lines: {} of {}", safe_lines, total_lines)
+
+    // dbg!(check_safety("1 2 7 8 9".to_string()));
 }
 
-fn check_safety(input: String) -> bool {
+fn check_safety(input: String, skip_index: i32) -> bool {
     // Split input string into integers
-    let parts = input.split(" ");
+    let binding = input.clone();
+    let parts = binding.split(" ");
 
+    let mut minimum_diff_met = true;
     let mut increasing = false;
     let mut decreasing = false;
     let mut gradual = true; // if increase/decrease is by 4 or more, gradual = false
     let mut last_number = -1;
+    let mut passing_before_last_index: bool = false;
 
-    for (index, part) in parts.enumerate() {
+    for (index, part) in parts.clone().enumerate() {
         // convert part to int
-        let part_int: i32 = part.parse().unwrap();
-        if last_number == -1 {
-            last_number = part_int;
-        } else {
-            let mut diff: i32 = 0;
-            if index > 0 {
-                diff = part_int - last_number
-            }
+        let part: i32 = part.parse().unwrap();
 
-            if diff.abs() > 3 {
-                gradual = false;
-            }
-
-            if index > 0 {
-                if diff < 0 {
-                    decreasing = true;
-                } else {
-                    increasing = true;
-                }
+        if skip_index == -1 {
+            let fixed = check_safety(input.clone(), 0);
+            if fixed {
+                println!("removing index {} fixes report", index);
+                return true;
             }
         }
-        println!("Part: {}, last: {}", part, last_number);
-        println!("Gradual: {}", gradual);
-        println!("Increasing?: {}", increasing);
-        println!("Decreasing?: {}", decreasing);
-        last_number = part_int;
+
+        if skip_index == index as i32 {
+            continue;
+        }
+
+        if last_number == -1 {
+            last_number = part;
+            continue;
+        }
+        let diff = part - last_number;
+
+        if diff.abs() > 3 {
+            gradual = false;
+        }
+
+        if diff == 0 {
+            minimum_diff_met = false;
+        }
+        if diff < 0 {
+            decreasing = true;
+        } else {
+            increasing = true;
+        }
+
+        last_number = part;
+
+        if skip_index == -1 && !((decreasing ^ increasing) & gradual & minimum_diff_met) {
+            if check_safety(input.clone(), index as i32) {
+                println!("removing index {} fixes report", index);
+                return true;
+            }
+        }
     }
 
-    return (decreasing ^ increasing) & gradual;
+    return (decreasing ^ increasing) & gradual & minimum_diff_met;
 }
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     #[test]
     fn safe() {
-        assert_eq!(check_safety("7 6 4 2 1").to_string(), true);
-        assert_eq!(check_safety("1 2 7 8 9").to_string(), false);
+        assert_eq!(check_safety("7 6 4 2 1".to_string(), -1), true);
+        assert_eq!(check_safety("1 2 7 8 9".to_string(), -1), false);
+        assert_eq!(check_safety("9 7 6 2 1".to_string(), -1), false);
+        assert_eq!(check_safety("1 3 2 4 5".to_string(), -1), true);
+        assert_eq!(check_safety("8 6 4 4 1".to_string(), -1), true);
+        assert_eq!(check_safety("1 3 6 7 9".to_string(), -1), true);
     }
 }
